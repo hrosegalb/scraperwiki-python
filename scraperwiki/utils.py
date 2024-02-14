@@ -47,15 +47,22 @@ def pdftoxml(pdfdata, options=""):
 
     xmlin = tempfile.NamedTemporaryFile(mode='r', suffix='.xml')
     tmpxml = xmlin.name  # "temph.xml"
-    cmd = 'pdftohtml -xml -nodrm -zoom 1.5 -enc UTF-8 -noframes %s "%s" "%s"' % (
-        options, pdffout.name, os.path.splitext(tmpxml)[0])
-    # can't turn off output, so throw away even stderr yeuch
-    cmd = cmd + " >/dev/null 2>&1"
-    os.system(cmd)
+    try:
+        cmd = 'pdftohtml -xml -nodrm -zoom 1.5 -enc UTF-8 -noframes %s "%s" "%s"' % (
+            options, pdffout.name, os.path.splitext(tmpxml)[0])
+        # can't turn off output, so throw away even stderr yeuch
+        cmd = cmd + " >/dev/null 2>&1"
+        os.system(cmd)
+        xmldata = xmlin.read()
+    except UnicodeDecodeError:
+        cmd = 'pdftohtml -xml -nodrm -zoom 1.5 -enc latin-1 -noframes %s "%s" "%s"' % (
+            options, pdffout.name, os.path.splitext(tmpxml)[0])
+        # can't turn off output, so throw away even stderr yeuch
+        cmd = cmd + " >/dev/null 2>&1"
+        os.system(cmd)
+        xmldata = xmlin.read()
 
     pdffout.close()
-    #xmlfin = open(tmpxml)
-    xmldata = xmlin.read()
     xmlin.close()
     return xmldata
 
